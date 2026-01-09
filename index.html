@@ -2,96 +2,105 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Firebase IP Searcher</title>
+    <title>Firebase Client Search</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding-top: 50px; }
-        .container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { color: #333; text-align: center; margin-bottom: 20px; }
-        .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none; }
-        button { padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #0056b3; }
-        #result-box { display: none; padding: 15px; border-radius: 5px; background: #e9ecef; position: relative; }
-        .ip-text { font-family: monospace; font-weight: bold; color: #d63384; font-size: 1.1em; }
-        .label { font-size: 0.8em; color: #666; display: block; margin-bottom: 5px; }
-        .btn-copy { font-size: 0.7em; background: #6c757d; margin-top: 10px; width: 100%; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding-top: 40px; }
+        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        h2 { color: #1a73e8; text-align: center; margin-bottom: 25px; font-size: 22px; }
+        
+        .search-group { display: flex; gap: 8px; margin-bottom: 20px; }
+        input { flex: 1; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; outline: none; transition: 0.3s; }
+        input:focus { border-color: #1a73e8; }
+        
+        button#btnSearch { padding: 10px 20px; background: #1a73e8; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        button#btnSearch:hover { background: #1557b0; }
+
+        #result-box { display: none; border-top: 2px solid #f0f2f5; pt: 20px; margin-top: 10px; animation: fadeIn 0.4s; }
+        
+        .info-item { margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; }
+        .label { font-size: 12px; color: #666; font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        
+        .ip-value { font-family: 'Courier New', monospace; font-size: 1.2em; color: #d93025; font-weight: bold; letter-spacing: 1px; }
+        .content-value { white-space: pre-wrap; color: #3c4043; line-height: 1.5; font-size: 14px; }
+        
+        .btn-copy { width: 100%; margin-top: 5px; padding: 8px; background: #eaeeef; border: none; border-radius: 5px; cursor: pointer; font-size: 12px; color: #5f6368; }
+        .btn-copy:hover { background: #dfe3e6; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Tra cứu Client IP</h2>
+    <h2>Tra cứu thông tin VM</h2>
     
-    <div class="input-group">
-        <input type="text" id="clientCode" placeholder="Nhập Client Code...">
-        <button onclick="searchIP()">Tìm</button>
+    <div class="search-group">
+        <input type="text" id="clientCode" placeholder="Nhập Client Code (vd: c001)">
+        <button id="btnSearch" onclick="searchData()">TÌM</button>
     </div>
 
     <div id="result-box">
-        <span class="label">Địa chỉ IP tìm thấy:</span>
-        <div id="ipDisplay" class="ip-text">********</div>
-        <button class="btn-copy" onclick="copyIP()">Sao chép IP</button>
+        <div class="info-item">
+            <span class="label">Địa chỉ IP:</span>
+            <div id="ipDisplay" class="ip-value">********</div>
+            <button class="btn-copy" onclick="copyIP()">Sao chép IP</button>
+        </div>
+
+        <div class="info-item">
+            <span class="label">Nội dung:</span>
+            <div id="contentDisplay" class="content-value">...</div>
+        </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-    // --- CẤU HÌNH FIREBASE CỦA BẠN TẠI ĐÂY ---
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     const firebaseConfig = {
-        databaseURL: "https://meqsave-default-rtdb.asia-southeast1.firebasedatabase.app/"
+        databaseURL: "https://TEN-PROJECT-CUA-BAN-default-rtdb.firebaseio.com"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Hàm tìm kiếm
-    window.searchIP = async function() {
-        const code = document.getElementById('clientCode').value.trim();
+    window.searchData = async function() {
+        const code = document.getElementById('clientCode').value.replaceAll(".", "").trim();
         const resultBox = document.getElementById('result-box');
         const ipDisplay = document.getElementById('ipDisplay');
+        const contentDisplay = document.getElementById('contentDisplay');
 
-        if (!code) {
-            alert("Vui lòng nhập mã!");
-            return;
-        }
+        if (!code) return alert("Vui lòng nhập mã!");
 
         try {
-            // Chỉ fetch đúng phần tử 'ip' bên trong client code
-            const ipRef = ref(db, `vm/${code}/ip`);
-            const snapshot = await get(ipRef);
+            // Lấy toàn bộ node của client đó (gồm cả ip và content)
+            const clientRef = ref(db, `vm/${code}`);
+            const snapshot = await get(clientRef);
 
             if (snapshot.exists()) {
-                const rawIP = snapshot.val();
+                const data = snapshot.val();
                 
-                // Hiển thị khung kết quả
                 resultBox.style.display = 'block';
-                
-                // Hiệu ứng che IP ban đầu (Masking)
-                ipDisplay.innerText = "• • • • • • • •";
-                ipDisplay.setAttribute('data-full-ip', rawIP);
-                
-                // Sau 0.5s thì hiện IP thật (tạo cảm giác bảo mật)
+                contentDisplay.innerText = data.content || "(Trống)";
+                ipDisplay.innerText = "...";
                 setTimeout(() => {
-                    ipDisplay.innerText = rawIP;
-                }, 300);
+                    ipDisplay.innerText = data.ip || "0.0.0.0";
+                }, 400);
 
             } else {
-                alert("Không tìm thấy dữ liệu cho Client Code này.");
+                alert("IP không tồn tại!");
                 resultBox.style.display = 'none';
             }
         } catch (error) {
             console.error(error);
-            alert("Lỗi kết nối hoặc quyền truy cập!");
+            alert("Lỗi data!");
         }
     }
 
-    // Hàm copy nhanh
     window.copyIP = function() {
         const ip = document.getElementById('ipDisplay').innerText;
+        if(ip === "Checking...") return;
         navigator.clipboard.writeText(ip);
-        alert("Đã copy IP: " + ip);
+        alert("Đã copy IP thành công!");
     }
 </script>
 
