@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Firebase IP Searcher</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding-top: 50px; }
+        .container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { color: #333; text-align: center; margin-bottom: 20px; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none; }
+        button { padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #0056b3; }
+        #result-box { display: none; padding: 15px; border-radius: 5px; background: #e9ecef; position: relative; }
+        .ip-text { font-family: monospace; font-weight: bold; color: #d63384; font-size: 1.1em; }
+        .label { font-size: 0.8em; color: #666; display: block; margin-bottom: 5px; }
+        .btn-copy { font-size: 0.7em; background: #6c757d; margin-top: 10px; width: 100%; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Tra cứu Client IP</h2>
+    
+    <div class="input-group">
+        <input type="text" id="clientCode" placeholder="Nhập Client Code...">
+        <button onclick="searchIP()">Tìm</button>
+    </div>
+
+    <div id="result-box">
+        <span class="label">Địa chỉ IP tìm thấy:</span>
+        <div id="ipDisplay" class="ip-text">********</div>
+        <button class="btn-copy" onclick="copyIP()">Sao chép IP</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    // --- CẤU HÌNH FIREBASE CỦA BẠN TẠI ĐÂY ---
+    const firebaseConfig = {
+        databaseURL: "https://meqsave-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Hàm tìm kiếm
+    window.searchIP = async function() {
+        const code = document.getElementById('clientCode').value.trim();
+        const resultBox = document.getElementById('result-box');
+        const ipDisplay = document.getElementById('ipDisplay');
+
+        if (!code) {
+            alert("Vui lòng nhập mã!");
+            return;
+        }
+
+        try {
+            // Chỉ fetch đúng phần tử 'ip' bên trong client code
+            const ipRef = ref(db, `vm/${code}/ip`);
+            const snapshot = await get(ipRef);
+
+            if (snapshot.exists()) {
+                const rawIP = snapshot.val();
+                
+                // Hiển thị khung kết quả
+                resultBox.style.display = 'block';
+                
+                // Hiệu ứng che IP ban đầu (Masking)
+                ipDisplay.innerText = "• • • • • • • •";
+                ipDisplay.setAttribute('data-full-ip', rawIP);
+                
+                // Sau 0.5s thì hiện IP thật (tạo cảm giác bảo mật)
+                setTimeout(() => {
+                    ipDisplay.innerText = rawIP;
+                }, 300);
+
+            } else {
+                alert("Không tìm thấy dữ liệu cho Client Code này.");
+                resultBox.style.display = 'none';
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Lỗi kết nối hoặc quyền truy cập!");
+        }
+    }
+
+    // Hàm copy nhanh
+    window.copyIP = function() {
+        const ip = document.getElementById('ipDisplay').innerText;
+        navigator.clipboard.writeText(ip);
+        alert("Đã copy IP: " + ip);
+    }
+</script>
+
+</body>
+</html>
