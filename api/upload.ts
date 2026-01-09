@@ -9,12 +9,22 @@ export default async function handler(req, res) {
 
   const body = req.body;
 
-  console.log("IP:", ip);
-  console.log("DATA:", body);
+  const firebaseURL =
+    "https://meqsave-default-rtdb.asia-southeast1.firebasedatabase.app/" +
+    encodeURIComponent(ip) +
+    ".json";
+
+  await fetch(firebaseURL, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      data: body,
+      time: Date.now()
+    })
+  });
 
   res.json({
     ok: true,
-    ip: ip,
-    received: body
+    ip: ip
   });
 }
