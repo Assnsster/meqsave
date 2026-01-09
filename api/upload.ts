@@ -1,16 +1,26 @@
+export const config = {
+  api: {
+    bodyParser: true,
+  },
+};
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).end();
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   const ip =
-    req.headers["x-forwarded-for"]?.split(",")[0] ||
-    req.socket.remoteAddress;
+    (req.headers["x-forwarded-for"] || "")
+      .toString()
+      .split(",")[0]
+      .trim() ||
+    req.socket.remoteAddress ||
+    "unknown";
 
   const body = req.body;
-
+  
   const firebaseURL =
-    "https://meqsave-default-rtdb.asia-southeast1.firebasedatabase.app/" +
+    "https://meqsave-default-rtdb.asia-southeast1.firebasedatabase.app/logs/" +
     encodeURIComponent(ip) +
     ".json";
 
@@ -19,12 +29,12 @@ export default async function handler(req, res) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       data: body,
-      time: Date.now()
-    })
+      updatedAt: Date.now(),
+    }),
   });
 
-  res.json({
+  res.status(200).json({
     ok: true,
-    ip: ip
+    ip,
   });
 }
