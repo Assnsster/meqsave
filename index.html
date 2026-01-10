@@ -56,50 +56,41 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, off } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    
     const firebaseConfig = {
         databaseURL: "https://meqsave-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    let activeRef = null;
 
-    window.searchData = async function() {
+    window.searchData = function() {
         const code = document.getElementById('clientCode').value.replaceAll(".", "").trim();
         const resultBox = document.getElementById('result-box');
         const ipDisplay = document.getElementById('ipDisplay');
         const contentDisplay = document.getElementById('contentDisplay');
 
         if (!code) return alert("Vui lòng nhập IP!");
+        if (activeRef) off(activeRef);
 
-        try {
-            // Lấy toàn bộ node của client đó (gồm cả ip và content)
-            const clientRef = ref(db, `vm/${code}`);
-            const snapshot = await get(clientRef);
-
+        activeRef = ref(db, `vm/${code}`);
+        onValue(activeRef, (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.val();
-                
                 resultBox.style.display = 'block';
                 contentDisplay.innerText = data.content || "(Trống)";
-                ipDisplay.innerText = "...";
-                setTimeout(() => {
-                    ipDisplay.innerText = data.ip || "0.0.0.0";
-                }, 400);
-
+                ipDisplay.innerText = data.ip || "0.0.0.0";
             } else {
                 alert("IP không tồn tại!");
                 resultBox.style.display = 'none';
             }
-        } catch (error) {
-            console.error(error);
-            alert("Lỗi data!");
-        }
+        });
     }
 
     window.copyIP = function() {
         const ip = document.getElementById('ipDisplay').innerText;
-        if(ip === "Checking...") return;
         navigator.clipboard.writeText(ip);
         alert("Đã copy IP thành công!");
     }
