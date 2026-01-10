@@ -2,41 +2,133 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meqsave Search IP</title>
+
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding-top: 40px; }
-        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
-        h2 { color: #1a73e8; text-align: center; margin-bottom: 25px; font-size: 22px; }
-        
-        .search-group { display: flex; gap: 8px; margin-bottom: 20px; }
-        input { flex: 1; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; outline: none; transition: 0.3s; }
-        input:focus { border-color: #1a73e8; }
-        
-        button#btnSearch { padding: 10px 20px; background: #1a73e8; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        button#btnSearch:hover { background: #1557b0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            padding-top: 40px;
+        }
 
-        #result-box { display: none; border-top: 2px solid #f0f2f5; pt: 20px; margin-top: 10px; animation: fadeIn 0.4s; }
-        
-        .info-item { margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; }
-        .label { font-size: 12px; color: #666; font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
-        
-        .ip-value { font-family: 'Courier New', monospace; font-size: 1.2em; color: #d93025; font-weight: bold; letter-spacing: 1px; }
-        .content-value { white-space: pre-wrap; color: #3c4043; line-height: 1.5; font-size: 14px; }
-        
-        .btn-copy { width: 100%; margin-top: 5px; padding: 8px; background: #eaeeef; border: none; border-radius: 5px; cursor: pointer; font-size: 12px; color: #5f6368; }
-        .btn-copy:hover { background: #dfe3e6; }
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+        }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        h2 {
+            color: #1a73e8;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 22px;
+        }
+
+        .search-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: #1a73e8;
+        }
+
+        button#btnSearch {
+            padding: 10px 20px;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button#btnSearch:hover {
+            background: #1557b0;
+        }
+
+        #result-box {
+            display: none;
+            border-top: 2px solid #f0f2f5;
+            padding-top: 20px;
+            margin-top: 10px;
+            animation: fadeIn 0.4s;
+        }
+
+        .info-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .label {
+            font-size: 12px;
+            color: #666;
+            font-weight: bold;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .ip-value {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2em;
+            color: #d93025;
+            font-weight: bold;
+        }
+
+        .content-value {
+            white-space: pre-wrap;
+            color: #3c4043;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .btn-copy {
+            width: 100%;
+            margin-top: 5px;
+            padding: 8px;
+            background: #eaeeef;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-copy:hover {
+            background: #dfe3e6;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
-<body>
 
+<body>
 <div class="container">
     <h2>Tra cứu thông tin VM</h2>
-    
+
     <div class="search-group">
-        <input type="text" id="clientCode" placeholder="Nhập IP/MainCode">
+        <input type="text" id="clientCode" placeholder="Nhập IP / MainCode">
         <button id="btnSearch" onclick="searchData()">TÌM</button>
     </div>
 
@@ -57,7 +149,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, onValue, off } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    
+
     const firebaseConfig = {
         databaseURL: "https://meqsave-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
@@ -66,13 +158,17 @@
     const db = getDatabase(app);
     let activeRef = null;
 
-    window.searchData = function() {
-        const code = document.getElementById('clientCode').value.replaceAll(".", "").trim();
+    window.searchData = function () {
+        const code = document.getElementById('clientCode')
+            .value.replace(/\./g, "")
+            .trim();
+
         const resultBox = document.getElementById('result-box');
         const ipDisplay = document.getElementById('ipDisplay');
         const contentDisplay = document.getElementById('contentDisplay');
 
         if (!code) return alert("Vui lòng nhập IP!");
+
         if (activeRef) off(activeRef);
 
         activeRef = ref(db, `vm/${code}`);
@@ -80,8 +176,8 @@
             if (snapshot.exists()) {
                 const data = snapshot.val();
                 resultBox.style.display = 'block';
-                contentDisplay.innerText = data.content || "(Trống)";
                 ipDisplay.innerText = data.ip || "0.0.0.0";
+                contentDisplay.innerText = data.content || "(Trống)";
             } else {
                 alert("IP không tồn tại!");
                 resultBox.style.display = 'none';
@@ -89,12 +185,12 @@
         });
     }
 
-    window.copyIP = function() {
-        const ip = document.getElementById('ipDisplay').innerText;
-        navigator.clipboard.writeText(ip);
-        alert("Đã copy IP thành công!");
+    window.copyIP = function () {
+        navigator.clipboard.writeText(
+            document.getElementById('ipDisplay').innerText
+        );
+        alert("Đã copy IP!");
     }
 </script>
-
 </body>
 </html>
