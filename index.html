@@ -2,7 +2,8 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Meqsave Client Search</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0>
+    <title>Meqsave Search IP</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding-top: 40px; }
         .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
@@ -35,7 +36,7 @@
     <h2>Tra cứu thông tin VM</h2>
     
     <div class="search-group">
-        <input type="text" id="clientCode" placeholder="Nhập Client Code (vd: c001)">
+        <input type="text" id="clientCode" placeholder="Nhập IP/MainCode">
         <button id="btnSearch" onclick="searchData()">TÌM</button>
     </div>
 
@@ -69,7 +70,7 @@
         const ipDisplay = document.getElementById('ipDisplay');
         const contentDisplay = document.getElementById('contentDisplay');
 
-        if (!code) return alert("Vui lòng nhập mã!");
+        if (!code) return alert("Vui lòng nhập IP!");
 
         try {
             // Lấy toàn bộ node của client đó (gồm cả ip và content)
