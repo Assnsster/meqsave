@@ -1,5 +1,5 @@
 echo "Checking connect"
-if curl -Is --max-time 5 "meqsave-default-rtdb.asia-southeast1.firebasedatabase.app" >/dev/null 2>&1; then
+if nc -zw 5 meqsave-default-rtdb.asia-southeast1.firebasedatabase.app 443;; then
   echo "Connect Meqsave OK"
   if curl -Is --max-time 5 "github.com" >/dev/null 2>&1; then
     echo "Connect Github OK"
